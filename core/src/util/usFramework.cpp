@@ -21,16 +21,17 @@
 =============================================================================*/
 
 #include "usFramework.h"
+#include "usFrameworkEvent.h"
 #include "usFrameworkPrivate.h"
 
 namespace us {
 
 const std::string Framework::PROP_STORAGE_LOCATION{ "org.cppmicroservices.framework.storage" };
 const std::string Framework::PROP_THREADING_SUPPORT{ "org.cppmicroservices.framework.threading.support" };
-const std::string Framework::PROP_LOG_LEVEL{ "org.cppmicroservices.framework.log.level" };
+const std::string Framework::PROP_LOG{ "org.cppmicroservices.framework.log" };
 
-Framework::Framework(const BundleInfo& info, const std::map<std::string, Any>& configuration)
-  : Bundle(std::unique_ptr<BundlePrivate>(new FrameworkPrivate(this, info, configuration)))
+Framework::Framework(const BundleInfo& info, const std::map<std::string, Any>& configuration, std::ostream* logger)
+  : Bundle(std::unique_ptr<BundlePrivate>(new FrameworkPrivate(this, info, configuration, logger)))
 {
 }
 
@@ -46,12 +47,16 @@ Framework::~Framework(void)
 void Framework::Start()
 {
   // TODO framework states
+  d->coreCtx->listeners.SendFrameworkEvent(FrameworkEvent(FrameworkEvent::Type::STARTING, shared_from_this(), std::string("Starting Bundle")));
   Bundle::Start();
+  d->coreCtx->listeners.SendFrameworkEvent(FrameworkEvent(FrameworkEvent::Type::STARTED, shared_from_this(), std::string("Bundle Started")));
 }
 
 void Framework::Stop()
 {
   if (!this->IsStarted()) return;
+
+  d->coreCtx->listeners.SendFrameworkEvent(FrameworkEvent(FrameworkEvent::Type::STOPPING, shared_from_this(), std::string("Stopping Bundle")));
 
   auto bundles = GetBundleContext()->GetBundles();
   for (auto bundle : bundles)
@@ -63,6 +68,7 @@ void Framework::Stop()
   }
 
   Bundle::Stop();
+  d->coreCtx->listeners.SendFrameworkEvent(FrameworkEvent(FrameworkEvent::Type::STOPPED, shared_from_this(), std::string("Bundle Stopped")));
 }
 
 void Framework::Uninstall()

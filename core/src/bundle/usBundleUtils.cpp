@@ -23,7 +23,6 @@
 #include "usBundleUtils.h"
 #include "usBundleUtils_p.h"
 
-#include <usLog.h>
 #include <usBundleInfo_p.h>
 #include <usUtils_p.h>
 
@@ -36,8 +35,68 @@
 #include <windows.h>
 #endif
 
-
 namespace us {
+
+/**
+ * A helper class to capture error code information per function
+ * call.
+ * Internal use only.
+ *
+ * Functionally equivalent to the free standing BundleUtils
+ * functions.
+ *
+ * Example usage
+ * <code>
+ * BundleUtilWrapper util;
+ * std::string path(util.GetLibraryPath(symbol));
+ * if(path.empty())
+ * {  
+ *   std::string err(util.LastError());
+ *   // ... do something with error string ...
+ * }
+ * </code>
+ */
+class BundleUtilWrapper
+{
+public:
+  BundleUtilWrapper() : _lastError() {}
+  ~BundleUtilWrapper() = default;
+
+  BundleUtilWrapper(const BundleUtilWrapper&) = delete;
+  BundleUtilWrapper& operator=(const BundleUtilWrapper&) = delete;
+
+  BundleUtilWrapper(const BundleUtilWrapper&& other) : _lastError(std::move(other._lastError)) {}
+  BundleUtilWrapper& operator=(const BundleUtilWrapper&& other) = delete;
+	
+  std::string GetLibraryPath(void* symbol) 
+  {
+    std::string result(BundleUtils::GetLibraryPath(symbol));
+    _lastError = GetLastError();
+    return result; 
+  }
+
+  void* GetSymbol(const std::string& bundleName, const std::string& libLocation, const char* symbol) 
+  {
+    void* result(BundleUtils::GetSymbol(bundleName, libLocation, symbol));
+    _lastError = GetLastError();
+    return result; 
+  }
+
+  std::string LastError() { return _lastError; }
+
+private:
+  std::string GetLastError()
+  {
+#if defined(US_PLATFORM_POSIX)
+    const char* str = dlerror();
+    return std::string(((str == nullptr) ? "" : str));
+#else
+    return us::GetLastErrorStr();
+#endif
+  }
+
+  std::string _lastError;
+};
 
 namespace {
 #ifdef US_BUILD_SHARED_LIBS
@@ -59,11 +118,8 @@ std::string GetLibraryPath_impl(void* symbol)
   {
     return info.dli_fname;
   }
-  else
-  {
-    US_DEBUG << "GetLibraryPath_impl() failed for address " << symbol;
-  }
-  return "";
+  
+  return std::string();
 }
 
 void* GetSymbol_impl(const BundleInfo& bundleInfo, const char* symbol)
@@ -85,21 +141,11 @@ void* GetSymbol_impl(const BundleInfo& bundleInfo, const char* symbol)
   if (selfHandle)
   {
     void* addr = dlsym(selfHandle, symbol);
-    if (!addr)
-    {
-      const char* dlerrorMsg = dlerror();
-      if (dlerrorMsg)
-      {
-        US_DEBUG << "GetSymbol_impl() failed: " << dlerrorMsg;
-      }
-    }
+
     dlclose(selfHandle);
     return addr;
   }
-  else
-  {
-    US_DEBUG << "GetSymbol_impl() dlopen() failed: " << dlerror();
-  }
+
   return nullptr;
 }
 
@@ -110,12 +156,7 @@ std::string GetLibraryPath_impl(void *symbol)
   HMODULE handle = nullptr;
   BOOL handleError = GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                                        static_cast<LPCTSTR>(symbol), &handle);
-  if (!handleError)
-  {
-    // Test
-    US_DEBUG << "GetLibraryPath_impl():GetBundleHandle() " << GetLastErrorStr();
-    return "";
-  }
+  if (!handleError) return std::string();
 
   char bundlePath[512];
   if (GetModuleFileName(handle, bundlePath, 512))
@@ -123,8 +164,7 @@ std::string GetLibraryPath_impl(void *symbol)
     return bundlePath;
   }
 
-  US_DEBUG << "GetLibraryPath_impl():GetBundleFileName() " << GetLastErrorStr();
-  return "";
+  return std::string();
 }
 
 void* GetSymbol_impl(const BundleInfo& bundleInfo, const char* symbol)
@@ -139,18 +179,9 @@ void* GetSymbol_impl(const BundleInfo& bundleInfo, const char* symbol)
     handle = GetModuleHandle(bundleInfo.location.c_str());
   }
 
-  if (!handle)
-  {
-    US_DEBUG << "GetSymbol_impl():GetBundleHandle() " << GetLastErrorStr();
-    return nullptr;
-  }
+  if (!handle) return nullptr;
 
-  void* addr = (void*)GetProcAddress(handle, symbol);
-  if (!addr)
-  {
-    US_DEBUG << "GetSymbol_impl():GetProcAddress(handle," << symbol << ") " << GetLastErrorStr();
-  }
-  return addr;
+  return (void*)GetProcAddress(handle, symbol);
 }
 
 #else

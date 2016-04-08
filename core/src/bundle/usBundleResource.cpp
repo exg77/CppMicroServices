@@ -272,20 +272,14 @@ void* BundleResource::GetData() const
 {
   if (!IsValid()) return nullptr;
 
-  void* data = d->resourceContainer->GetData(d->stat.index);
-  if (data == nullptr)
-  {
-    US_WARN << "Error uncompressing resource data for " << this->GetResourcePath() << " from " 
-            << d->resourceContainer->GetBundleInfo()->location;
-  }
-  return data;
+  return d->resourceContainer->GetData(d->stat.index);
 }
 
 }
 
-using namespace us;
-
-std::ostream& operator<<(std::ostream& os, const BundleResource& resource)
+std::ostream& operator<<(std::ostream& os, const us::BundleResource& resource)
 {
-  return os << resource.GetResourcePath();
+	return os << resource.GetResourcePath();
 }
+
+

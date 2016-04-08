@@ -61,7 +61,7 @@ static inline BundleContext* GetBundleContext()
 
   if (getBundleContext)
   {
-      return getBundleContext();
+    return getBundleContext();
   }
 
   return nullptr;

@@ -26,6 +26,7 @@ limitations under the License.
 #include <usCoreBundleContext_p.h>
 #include <usBundlePrivate.h>
 
+#include <ostream>
 #include <map>
 #include <string>
 
@@ -41,9 +42,10 @@ class FrameworkPrivate : public BundlePrivate
 {
 public:
 
-  FrameworkPrivate(Framework* qq, const BundleInfo& info, const std::map<std::string, Any>& configuration);
+  FrameworkPrivate(Framework* qq, const BundleInfo& info, const std::map<std::string, Any>& configuration, std::ostream* logger);
 
   CoreBundleContext coreBundleContext;
+
 };
 
 }

@@ -26,6 +26,7 @@
 
 #include <usCoreConfig.h>
 
+#include <exception>
 #include <string>
 #include <vector>
 #include <memory>
@@ -45,18 +46,6 @@ bool IsSharedLibrary(const std::string& location);
 }
 
 //-------------------------------------------------------------------
-// Bundle auto-loading
-//-------------------------------------------------------------------
-
-namespace us {
-
-struct BundleInfo;
-class CoreBundleContext;
-
-
-}
-
-//-------------------------------------------------------------------
 // Generic utility functions
 //-------------------------------------------------------------------
 
@@ -72,6 +61,8 @@ template<typename T> std::shared_ptr<T> make_shared_array(std::size_t size)
 // Supports Linux, Mac, and Windows.
 std::string GetCurrentWorkingDirectory();
 
+void TerminateForDebug(const std::exception_ptr ex);
+
 }
 
 //-------------------------------------------------------------------
@@ -80,7 +71,7 @@ std::string GetCurrentWorkingDirectory();
 
 namespace us {
 
-US_Core_EXPORT std::string GetLastErrorStr();
+std::string GetLastErrorStr();
 
 }
 

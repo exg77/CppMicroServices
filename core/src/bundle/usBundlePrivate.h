@@ -31,6 +31,7 @@
 
 #include "usThreads_p.h"
 
+#include <ostream>
 #include <memory>
 
 namespace us {

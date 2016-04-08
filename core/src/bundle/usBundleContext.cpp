@@ -29,10 +29,12 @@
 #include "usBundlePrivate.h"
 #include "usCoreBundleContext_p.h"
 #include "usFramework.h"
+#include "usLog.h"
 #include "usServiceRegistry_p.h"
 #include "usServiceReferenceBasePrivate.h"
 #include "usUtils_p.h"
 
+#include <memory>
 #include <stdio.h>
 
 namespace us {
@@ -43,6 +45,11 @@ BundleContext::BundleContext(BundlePrivate* bundle)
 
 BundleContext::~BundleContext()
 {
+}
+
+std::shared_ptr<LogSink> BundleContext::GetLogSink()
+{
+  return d->bundle->coreCtx->sink->shared_from_this();
 }
 
 std::shared_ptr<Bundle> BundleContext::GetBundle() const
@@ -169,9 +176,12 @@ struct ServiceHolder
     {
       bc->UngetService(sref);
     }
-    catch (const std::exception& exp)
+    catch (const std::exception& )
     {
-      US_INFO << "UngetService threw an exception - " << exp.what();
+	  // don't throw exceptions from the destructor. For an explanation, see:
+	  // https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md
+	  // Following this rule means that a FrameworkEvent isn't an option here 
+	  // since it contains an exception object which clients could throw.
     }
   }
 };
@@ -264,6 +274,30 @@ void BundleContext::RemoveBundleListener(const BundleListener& delegate)
   // won the race condition.
 
   b->coreCtx->listeners.RemoveBundleListener(this, delegate, nullptr);
+}
+
+void BundleContext::AddFrameworkListener(const FrameworkListener& listener)
+{
+	auto b = (d->Lock(), d->IsValid_unlocked(), d->bundle);
+
+	// CONCURRENCY NOTE: This is a check-then-act situation,
+	// but we ignore it since the time window is small and
+	// the result is the same as if the calling thread had
+	// won the race condition.
+
+	b->coreCtx->listeners.AddFrameworkListener(this, listener, nullptr);
+}
+
+void BundleContext::RemoveFrameworkListener(const FrameworkListener& listener)
+{
+	auto b = (d->Lock(), d->IsValid_unlocked(), d->bundle);
+
+	// CONCURRENCY NOTE: This is a check-then-act situation,
+	// but we ignore it since the time window is small and
+	// the result is the same as if the calling thread had
+	// won the race condition.
+
+	b->coreCtx->listeners.RemoveFrameworkListener(this, listener, nullptr);
 }
 
 bool BundleContext::UngetService(const ServiceReferenceBase& reference)

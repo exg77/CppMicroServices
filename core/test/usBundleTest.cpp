@@ -120,10 +120,10 @@ void frame010a(const std::shared_ptr<Framework>& framework, BundleContext* conte
   auto m = context->GetBundle();
 
   long int contextid = m->GetBundleId();
-  US_DEBUG << "CONTEXT ID:" << contextid;
+  std::cout << "CONTEXT ID:" << contextid;
 
   std::string location = m->GetLocation();
-  US_DEBUG << "LOCATION:" << location;
+  std::cout << "LOCATION:" << location;
   US_TEST_CONDITION(!location.empty(), "Test for non-empty bundle location")
 
   US_TEST_CONDITION(m->IsStarted(), "Test for started flag")
@@ -148,8 +148,7 @@ void frame018a(BundleContext* context)
   try
   {
     context->GetService(ServiceReferenceU());
-    US_DEBUG << "Got service object, expected std::invalid_argument exception";
-    US_TEST_FAILED_MSG(<< "Got service object, excpected std::invalid_argument exception")
+    US_TEST_FAILED_MSG(<< "Got service object, expected std::invalid_argument exception")
   }
   catch (const std::invalid_argument& )
   {}

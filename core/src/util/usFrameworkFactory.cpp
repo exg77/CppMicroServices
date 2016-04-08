@@ -28,32 +28,19 @@
 
 namespace us {
 
-FrameworkFactory::FrameworkFactory(void)
-{
-}
-
-FrameworkFactory::~FrameworkFactory(void)
-{
-}
-
-std::shared_ptr<Framework> FrameworkFactory::NewFramework(const std::map<std::string, Any>& configuration)
+std::shared_ptr<Framework> FrameworkFactory::NewFramework(const std::map<std::string, Any>& configuration, std::ostream* logger)
 {
   BundleInfo bundleInfo(US_CORE_FRAMEWORK_NAME);
 
-  std::shared_ptr<Framework>(FrameworkFactory::*newFWFncPtr)(const std::map<std::string, Any>&) = &FrameworkFactory::NewFramework;
+  std::shared_ptr<Framework>(FrameworkFactory::*newFWFncPtr)(const std::map<std::string, Any>&, std::ostream*) = &FrameworkFactory::NewFramework;
   void* newFramework = nullptr;
   std::memcpy(&newFramework, &newFWFncPtr, sizeof(void*));
   bundleInfo.location = BundleUtils::GetLibraryPath(newFramework);
   bundleInfo.id = 0;
 
-  std::shared_ptr<Framework> fw(new Framework(bundleInfo, configuration));
+  std::shared_ptr<Framework> fw(new Framework(bundleInfo, configuration, logger));
   fw->d->Init(&static_cast<FrameworkPrivate*>(fw->d.get())->coreBundleContext);
   return fw;
-}
-
-std::shared_ptr<Framework> FrameworkFactory::NewFramework(void)
-{
-  return NewFramework(std::map<std::string, Any>());
 }
 
 }

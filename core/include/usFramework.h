@@ -26,6 +26,7 @@
 #include <usCoreConfig.h>
 #include "usBundle.h"
 
+#include <ostream>
 #include <map>
 #include <string>
 
@@ -55,7 +56,7 @@ class FrameworkPrivate;
  *
  * @remarks This class is thread-safe.
  *
- * @see FrameworkFactory::NewFramework(std::map<std::string, std::string> configuration)
+ * @see FrameworkFactory::NewFramework(std::map<std::string, us::Any> configuration)
  */
 class US_Core_EXPORT Framework : public Bundle
 {
@@ -137,12 +138,10 @@ public:
     static const std::string PROP_THREADING_SUPPORT;
 
     /**
-     * The framework's log level property key name.
-     * This property's default value is "3" (Only errors are logged).
-     *
-     * @see MsgType
+     * The framework's log property key name.
+     * This property's default value is off (boolean 'false')
      */
-    static const std::string PROP_LOG_LEVEL;
+    static const std::string PROP_LOG;
 
 private:
     // Framework instances are exclusively constructed by the FrameworkFactory class
@@ -150,7 +149,7 @@ private:
 
     // Allow the framework to be constructed with configuration properties
     // provided by a FrameworkFactory object.
-    Framework(const BundleInfo& info, const std::map<std::string, Any>& configuration);
+    Framework(const BundleInfo& info, const std::map<std::string, Any>& configuration, std::ostream* logger);
 
 };
 

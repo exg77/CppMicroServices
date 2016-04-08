@@ -38,21 +38,21 @@ struct TestBundleLQ : public TestBundleLQService
 class TestBundleLQActivator : public BundleActivator
 {
 public:
-    
+
   TestBundleLQActivator() {}
   ~TestBundleLQActivator() {}
 
   void Start(BundleContext* context)
   {
       s = std::make_shared<TestBundleLQ>();
-      
+
       ServiceProperties props;
       props["service.testproperty"] = std::string("YES");
-      
-      US_INFO << "Registering TestBundleLQService";
+
+      std::cout << "Registering TestBundleLQService";
       sr = context->RegisterService<TestBundleLQService>(s, props);
   }
-    
+
   void Stop(BundleContext*)
   {
       sr.Unregister();

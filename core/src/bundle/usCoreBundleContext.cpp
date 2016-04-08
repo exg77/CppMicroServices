@@ -26,10 +26,11 @@
 US_MSVC_DISABLE_WARNING(4355)
 
 #include "usCoreBundleContext_p.h"
+#include "usFramework.h"
 
 namespace us {
 
-CoreBundleContext::CoreBundleContext(Bundle* systemBundle, const std::map<std::string, Any>& props)
+CoreBundleContext::CoreBundleContext(Bundle* systemBundle, const std::map<std::string, Any>& props, std::ostream* logger)
   : listeners(this)
   , services(this)
   , serviceHooks(this)
@@ -37,6 +38,7 @@ CoreBundleContext::CoreBundleContext(Bundle* systemBundle, const std::map<std::s
   , bundleRegistry(this)
   , frameworkProperties(props)
   , systemBundle(systemBundle)
+  , sink(std::make_shared<LogSink>(logger, any_cast<bool>(props.at(Framework::PROP_LOG))))
 {
 }
 

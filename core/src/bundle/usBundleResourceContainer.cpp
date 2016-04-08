@@ -23,7 +23,6 @@
 #include "usBundleResourceContainer_p.h"
 
 #include "usBundleInfo.h"
-#include "usBundleUtils_p.h"
 #include "usBundleResource.h"
 #include "usLog.h"
 
@@ -84,10 +83,6 @@ BundleResourceContainer::BundleResourceContainer(const BundleInfo* bundleInfo)
   if (mz_zip_reader_init_file(&d->m_ZipArchive, bundleInfo->location.c_str(), 0))
   {
     d->m_IsValid = true;
-  }
-  else
-  {
-    US_DEBUG << "Could not init zip archive for bundle " << bundleInfo->name;
   }
 }
 

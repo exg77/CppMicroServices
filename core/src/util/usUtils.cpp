@@ -64,15 +64,6 @@ std::string library_suffix()
 #endif
 }
 
-#ifdef US_PLATFORM_POSIX
-
-const char DIR_SEP = '/';
-
-#elif defined(US_PLATFORM_WINDOWS)
-
-const char DIR_SEP = '\\';
-
-#endif
 }
 
 namespace us {
@@ -171,38 +162,36 @@ std::string GetLastErrorStr()
 #endif
 }
 
-static MsgHandler handler = 0;
-
-MsgHandler installMsgHandler(MsgHandler h)
+void TerminateForDebug(const std::exception_ptr ex)
 {
-  MsgHandler old = handler;
-  handler = h;
-  return old;
-}
-
-void message_output(MsgType msgType, const char *buf)
-{
-  if (handler)
-  {
-    (*handler)(msgType, buf);
-  }
-  else
-  {
-    fprintf(stderr, "%s\n", buf);
-    fflush(stderr);
-  }
-
-  if (msgType == ErrorMsg)
-  {
 #if defined(_MSC_VER) && !defined(NDEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
+    std::string message;
+    if (ex)
+    {
+      try
+      {
+        std::rethrow_exception(ex);
+      }
+      catch (const std::exception& e)
+      {
+        message = e.what();
+      }
+      catch (...)
+      {
+        message = "unknown exception";
+      }
+    }
+
     // get the current report mode
     int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
     _CrtSetReportMode(_CRT_ERROR, reportMode);
-    int ret = _CrtDbgReport(_CRT_ERROR, __FILE__, __LINE__, CppMicroServices_VERSION_STR, buf);
+    int ret = _CrtDbgReport(_CRT_ERROR, __FILE__, __LINE__, CppMicroServices_VERSION_STR, message.c_str());
     if (ret == 0  && reportMode & _CRTDBG_MODE_WNDW)
       return; // ignore
     else if (ret == 1)
       _CrtDbgBreak();
+#else
+    (void)ex;
 #endif
 
 #ifdef US_PLATFORM_POSIX
@@ -210,7 +199,6 @@ void message_output(MsgType msgType, const char *buf)
 #else
   exit(1); // goodbye cruel world
 #endif
-  }
 }
 
 #ifdef US_HAVE_CXXABI_H

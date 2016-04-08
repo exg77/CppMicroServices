@@ -30,29 +30,27 @@ limitations under the License.
 namespace us {
 
 
-std::map<std::string, Any> InitProperties(std::map<std::string, Any> configuration)
+std::map<std::string, Any> InitDefaultProperties(std::map<std::string, Any> configuration)
 {
     // emplace cannot be used until the minimum GCC compiler is >= 4.8
     configuration.insert(std::make_pair(Framework::PROP_STORAGE_LOCATION, Any(GetCurrentWorkingDirectory())));
-    configuration.insert(std::pair<std::string, Any>(Framework::PROP_LOG_LEVEL, 3));
+    configuration.insert(std::make_pair(Framework::PROP_LOG, Any(false)));
 
     // Framework::PROP_THREADING_SUPPORT is a read-only property whose value is based off of a compile-time switch.
     // Run-time modification of the property should be ignored as it is irrelevant.
     configuration.erase(Framework::PROP_THREADING_SUPPORT);
 #ifdef US_ENABLE_THREADING_SUPPORT
-    configuration.insert(std::pair<std::string, Any>(Framework::PROP_THREADING_SUPPORT, std::string("multi")));
+    configuration.insert(std::make_pair(Framework::PROP_THREADING_SUPPORT, Any(std::string("multi"))));
 #else
-    configuration.insert(std::pair<std::string, Any>(Framework::PROP_THREADING_SUPPORT, std::string("single")));
+    configuration.insert(std::make_pair(Framework::PROP_THREADING_SUPPORT, Any(std::string("single"))));
 #endif
 
     return configuration;
 }
 
-FrameworkPrivate::FrameworkPrivate(Framework* qq, const BundleInfo& info, const std::map<std::string, Any>& configuration)
+FrameworkPrivate::FrameworkPrivate(Framework* qq, const BundleInfo& info, const std::map<std::string, Any>& configuration, std::ostream* logger)
   : BundlePrivate(qq, info)
-  , coreBundleContext(qq, InitProperties(configuration))
-{
-  Logger::instance().SetLogLevel(static_cast<us::MsgType>(any_cast<int>(coreBundleContext.frameworkProperties.find(Framework::PROP_LOG_LEVEL)->second)));
-}
+  , coreBundleContext(qq, InitDefaultProperties(configuration), logger)
+{ }
 
 }

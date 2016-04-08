@@ -93,7 +93,7 @@ struct UngetHelper
   ~UngetHelper()
   {
     try
-  {
+    {
       if(sref && bc->GetBundle() != nullptr)
       {
         bool isPrototypeScope = sref.GetProperty(ServiceConstants::SERVICE_SCOPE()).ToString() ==
@@ -109,9 +109,12 @@ struct UngetHelper
         }
       }
     }
-    catch (const std::exception& ex)
+    catch (const std::exception& )
     {
-      US_INFO << "UngetService threw an exception - " << ex.what();
+      // don't throw exceptions from the destructor. For an explanation, see:
+	  // https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md
+	  // Following this rule means that a FrameworkEvent isn't an option here 
+	  // since it contains an exception object which clients could throw.
     }
   }
 };

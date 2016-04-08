@@ -25,7 +25,6 @@
 #include "usBundle.h"
 #include "usBundleContext.h"
 #include "usBundleActivator.h"
-#include "usBundleUtils_p.h"
 #include "usBundleResource.h"
 #include "usBundleResourceStream.h"
 #include "usCoreBundleContext_p.h"
@@ -69,7 +68,7 @@ void BundlePrivate::Init(CoreBundleContext* coreCtx)
       }
       catch (const std::exception& e)
       {
-        US_ERROR << "Parsing of manifest.json for bundle " << info.location << " failed: " << e.what();
+		throw std::runtime_error(std::string("Parsing of manifest.json for bundle ") + info.location + " failed: " + e.what());
       }
     }
   }

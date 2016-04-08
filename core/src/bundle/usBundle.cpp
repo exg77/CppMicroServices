@@ -31,6 +31,7 @@
 #include "usBundleResource.h"
 #include "usBundleUtils_p.h"
 #include "usCoreBundleContext_p.h"
+#include "usFrameworkEvent.h"
 
 #include "usCoreConfig.h"
 
@@ -131,6 +132,10 @@ void Bundle::Start()
     {
       setBundleContext(d->bundleContext);
     }
+	else
+	{
+      d->coreCtx->listeners.SendFrameworkEvent(FrameworkEvent(FrameworkEvent::Type::ERROR, shared_from_this(), std::string(""), std::make_exception_ptr(std::runtime_error("Could not set the bundle context for use by GetBundleContext()."))));
+	}
 
     std::string create_activator_func = "_us_create_activator_" + d->info.name;
     void* createActivatorHookSym = BundleUtils::GetSymbol(d->info, create_activator_func.c_str());
@@ -197,7 +202,7 @@ void Bundle::Stop()
     catch (const std::exception& e)
     {
       throw std::runtime_error("Stopping bundle " + d->info.name + " failed: " + e.what());
-  }
+    }
 
     // delete the activator
     typedef void(*DestroyActivatorHook)(BundleActivator*);

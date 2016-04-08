@@ -5,10 +5,10 @@
 set(_public_headers
   usAny.h
   usFramework.h
+  usFrameworkEvent.h
   usFrameworkFactory.h
   usLDAPProp.h
   usListenerFunctors.h
-  usLog.h
   usSharedData.h
   usSharedLibrary.h
   usShrinkableMap.h

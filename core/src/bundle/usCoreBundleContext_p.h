@@ -30,7 +30,9 @@
 #include "usServiceHooks_p.h"
 #include "usBundleRegistry_p.h"
 #include "usAny.h"
+#include "usLog.h"
 
+#include <ostream>
 #include <string>
 #include <map>
 
@@ -77,11 +79,13 @@ public:
 
   Bundle* const systemBundle;
 
+  std::shared_ptr<LogSink> sink;
+
   /**
    * Construct a core context
    *
    */
-  CoreBundleContext(Bundle* systemBundle, const std::map<std::string, Any>& props = std::map<std::string, Any>());
+  CoreBundleContext(Bundle* systemBundle, const std::map<std::string, Any>& props, std::ostream* logger);
 
   ~CoreBundleContext();
 

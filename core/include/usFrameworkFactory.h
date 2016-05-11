@@ -46,11 +46,11 @@ class Framework;
 class US_Core_EXPORT FrameworkFactory
 {
 public:
-    FrameworkFactory(void) = default;
-    virtual ~FrameworkFactory(void) = default;
+    FrameworkFactory(void);
+    virtual ~FrameworkFactory(void);
 
-	FrameworkFactory(const FrameworkFactory&) = delete;
-	FrameworkFactory& operator=(const FrameworkFactory&) = delete;
+    FrameworkFactory(const FrameworkFactory&) = delete;
+    FrameworkFactory& operator=(const FrameworkFactory&) = delete;
 
     /**
      * Create a new Framework instance.
@@ -62,7 +62,7 @@ public:
      *
      * @return A new, configured Framework instance.
      */
-	std::shared_ptr<Framework> NewFramework(const std::map<std::string, Any>& configuration = std::map<std::string, Any>(), std::ostream* logger = nullptr);
+    std::shared_ptr<Framework> NewFramework(const std::map<std::string, Any>& configuration = std::map<std::string, Any>(), std::ostream* logger = nullptr);
 
 };
 

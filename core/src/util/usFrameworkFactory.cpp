@@ -28,6 +28,14 @@
 
 namespace us {
 
+FrameworkFactory::FrameworkFactory(void)
+{
+}
+
+FrameworkFactory::~FrameworkFactory(void)
+{
+}
+
 std::shared_ptr<Framework> FrameworkFactory::NewFramework(const std::map<std::string, Any>& configuration, std::ostream* logger)
 {
   BundleInfo bundleInfo(US_CORE_FRAMEWORK_NAME);
